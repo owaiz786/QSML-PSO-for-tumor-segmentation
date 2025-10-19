@@ -1,0 +1,30 @@
+{
+    "baseline": {
+        "dice_score": 0.34484771414872106,
+        "f1_score": 0.34484771414872106,
+        "iou_score": 0.20834802760844376,
+        "precision": 0.6712111990261717,
+        "recall_sensitivity": 0.23202838988399982,
+        "specificity": 0.9983271768017016,
+        "raw_confusion_matrix": {
+            "tn": 4835804,
+            "fp": 8103,
+            "fn": 54751,
+            "tp": 16542
+        }
+    },
+    "optimized": {
+        "dice_score": 0.43685046588636955,
+        "f1_score": 0.4368504658863696,
+        "iou_score": 0.2794681227564589,
+        "precision": 0.50032585083273,
+        "recall_sensitivity": 0.38766779347200986,
+        "specificity": 0.9943017072788557,
+        "raw_confusion_matrix": {
+            "tn": 4816305,
+            "fp": 27602,
+            "fn": 43655,
+            "tp": 27638
+        }
+    }
+}

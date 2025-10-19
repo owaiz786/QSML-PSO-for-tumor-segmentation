@@ -1,0 +1,26 @@
+{
+    "baseline": {
+        "dice": 0.31721246242523193,
+        "params": {
+            "learning_rate": 0.001,
+            "dropout_rate": 0.3,
+            "num_filters": 16
+        }
+    },
+    "classical_optimized": {
+        "dice": 2.2493655549293834e-10,
+        "params": {
+            "learning_rate": 0.00688476177779676,
+            "dropout_rate": 0.3357003404431709,
+            "num_filters": 8.0
+        }
+    },
+    "quantum_optimized": {
+        "dice": 2.2493655549293834e-10,
+        "params": {
+            "learning_rate": 0.008860542573279518,
+            "dropout_rate": 0.3169825673772244,
+            "num_filters": 10.487514493269966
+        }
+    }
+}

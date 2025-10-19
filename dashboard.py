@@ -127,7 +127,7 @@ st.markdown("""
     /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: 10px;
-        background: transparent;
+        background-color: transparent;
     }
     
     .stTabs [data-baseweb="tab"] {
@@ -138,23 +138,33 @@ st.markdown("""
         font-weight: 600;
         font-size: 1rem;
         border: 2px solid transparent;
+        color: #333;
     }
     
     .stTabs [aria-selected="true"] {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        color: white !important;
         border-color: #667eea;
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        background: linear-gradient(135deg, #e8ecf1 0%, #dce2e8 100%);
     }
     
     /* Metrics */
     [data-testid="stMetricValue"] {
         font-size: 2rem;
         font-weight: 700;
-        color: #667eea;
+        color: white !important;
     }
     
     [data-testid="stMetricDelta"] {
         font-size: 1rem;
+        font-weight: 600;
+    }
+    
+    [data-testid="stMetricLabel"] {
+        color: white !important;
         font-weight: 600;
     }
     
@@ -188,7 +198,21 @@ st.markdown("""
         background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
     }
     
-    [data-testid="stSidebar"] * {
+    [data-testid="stSidebar"] .element-container {
+        color: white !important;
+    }
+    
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] h4,
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] span,
+    [data-testid="stSidebar"] label {
+        color: white !important;
+    }
+    
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] {
         color: white !important;
     }
     
@@ -358,7 +382,6 @@ else:
             st.error("❌ Trained model not found. Please run `run_optimizer.py` first.")
         else:
             # Upload section
-            st.markdown('<div class="upload-zone">', unsafe_allow_html=True)
             st.markdown("### 📤 Upload Brain MRI Scan")
             uploaded_file = st.file_uploader(
                 "Drag and drop or browse files",
@@ -443,7 +466,7 @@ else:
                     stat_col3.metric("Total Pixels", "16,384")
                     stat_col4.metric("Resolution", "128×128")
                     
-                    st.markdown('<div class="success-box">✅ Segmentation completed successfully!</div>', unsafe_allow_html=True)
+                   
 
     # --- Tab 2: Performance Comparison ---
     with tab2:
@@ -705,155 +728,4 @@ else:
         - Measures spatial overlap between prediction and ground truth
         - Range: 0-1, where 1 is perfect segmentation
         - Formula: 2|A ∩ B| / (|A| + |B|)
-        
-        **F1-Score**
-        - Balances precision and recall
-        - Important for medical applications
-        - Formula: 2 × (Precision × Recall) / (Precision + Recall)
-        
-        **IoU (Intersection over Union)**
-        - Strict metric that penalizes both over- and under-segmentation
-        - Formula: |A ∩ B| / |A ∪ B|
-        
-        ### 🚀 Getting Started
-        
-        1. Navigate to the **Live Segmentation** tab
-        2. Upload a brain MRI scan (TIF, PNG, JPG)
-        3. Click "Segment Tumor" to process
-        4. View results and statistics
-        5. Explore other tabs for detailed analysis
-        
-        ### 📝 Notes
-        
-        - Model processes 128×128 grayscale images
-        - Red overlay indicates detected tumor regions
-        - All metrics are computed on test dataset
-        - Optimization history shows convergence over generations
-        
-        ### ⚠️ Disclaimer
-        
-        This tool is designed for research and educational purposes only. It should not be used 
-        as a substitute for professional medical diagnosis or treatment. Always consult qualified 
-        healthcare professionals for medical decisions.
-        
-        ### 📚 References & Resources
-        
-        - **U-Net Paper**: Ronneberger et al. "U-Net: Convolutional Networks for Biomedical Image Segmentation" (2015)
-        - **PSO**: Kennedy & Eberhart "Particle Swarm Optimization" (1995)
-        - **Medical Imaging**: Brain tumor segmentation is a critical task in computer-aided diagnosis
-        
-        ### 🤝 Contributing
-        
-        To improve this project:
-        1. Run `python run_optimizer.py` to train models with your own data
-        2. Experiment with different QMSL-PSO parameters
-        3. Compare results across multiple optimization runs
-        4. Visualize and analyze the optimization trajectory
-        
-        ### 📧 Support
-        
-        For questions or issues:
-        - Check that all required files are in the `reports/` directory
-        - Ensure models are properly trained before launching dashboard
-        - Review convergence plots to verify optimization quality
-        
-        ---
-        
-        **Built with ❤️ using TensorFlow, Streamlit, and QMSL-PSO**
         """)
-        
-        # Additional interactive elements
-        st.markdown("---")
-        st.markdown("### 🎓 Quick Tutorial")
-        
-        with st.expander("🔍 How to Use Live Segmentation"):
-            st.markdown("""
-            1. **Upload Image**: Click "Browse files" or drag-and-drop an MRI scan
-            2. **Review Info**: Check image details in the information panel
-            3. **Segment**: Click the "Segment Tumor" button
-            4. **Analyze Results**: View the predicted mask and overlay
-            5. **Check Statistics**: Review tumor coverage and pixel counts
-            """)
-        
-        with st.expander("📊 How to Interpret Results"):
-            st.markdown("""
-            **Predicted Mask (White regions = Tumor)**
-            - Shows binary classification of each pixel
-            - White pixels indicate detected tumor tissue
-            - Black pixels indicate healthy brain tissue
-            
-            **Tumor Overlay (Red overlay on original)**
-            - Red transparent layer shows tumor location
-            - Easier to visualize tumor in context
-            - Helps assess anatomical position
-            
-            **Statistics**
-            - **Tumor Coverage**: Percentage of image containing tumor
-            - **Affected Pixels**: Total number of tumor pixels detected
-            - **Resolution**: Image dimensions used for processing
-            """)
-        
-        with st.expander("🧪 Understanding Optimization"):
-            st.markdown("""
-            **QMSL-PSO (Quantum-inspired Multi-Swarm Particle Swarm Optimization)**
-            
-            1. **Particle Swarm**: Population of candidate solutions exploring search space
-            2. **Multi-Swarm**: Multiple sub-populations for better exploration
-            3. **Quantum-inspired**: Uses quantum mechanics principles for enhanced search
-            4. **Hyperparameters Optimized**:
-               - Learning rate
-               - Batch size
-               - Number of filters
-               - Dropout rates
-               - And more...
-            
-            The algorithm iteratively improves solutions based on:
-            - Personal best position of each particle
-            - Global best position across all particles
-            - Quantum-inspired exploration mechanisms
-            """)
-        
-        st.markdown("---")
-        
-        # System requirements
-        st.markdown("### 💻 System Requirements")
-        
-        req_col1, req_col2 = st.columns(2)
-        
-        with req_col1:
-            st.markdown("""
-            **Minimum Requirements:**
-            - Python 3.8+
-            - TensorFlow 2.x
-            - 4GB RAM
-            - CPU-based inference
-            """)
-        
-        with req_col2:
-            st.markdown("""
-            **Recommended:**
-            - Python 3.9+
-            - TensorFlow 2.10+
-            - 8GB+ RAM
-            - GPU for training
-            """)
-        
-        st.markdown("---")
-        
-        # File structure
-        st.markdown("### 📁 Expected File Structure")
-        
-        st.code("""
-reports/
-├── final_tumor_segmentation_model.h5    # Trained model
-├── best_hyperparameters.json            # Optimal hyperparameters
-├── comparison_results.json              # Performance metrics
-├── convergence_history.npy              # Optimization history
-├── swarm_exploration.gif                # Animation
-└── figures/
-    ├── model_comparison.png             # Visual comparison
-    ├── baseline_confusion_matrix.png    # Baseline CM
-    └── optimized_confusion_matrix.png   # Optimized CM
-        """, language="plaintext")
-        
-        st.markdown('<div class="info-box">💡 Ensure all files are present for full dashboard functionality</div>', unsafe_allow_html=True)

@@ -256,6 +256,22 @@ def load_keras_model(model_path):
             return None
     return None
 
+def plot_benchmark_surface(func, bounds, title):
+    """Creates a 3D surface plot for a 2D version of a benchmark function."""
+    x = np.linspace(bounds[0], bounds[1], 100)
+    y = np.linspace(bounds[0], bounds[1], 100)
+    X, Y = np.meshgrid(x, y)
+    Z = np.array([func(np.array([x, y])) for x, y in zip(np.ravel(X), np.ravel(Y))]).reshape(X.shape)
+    
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.plot_surface(X, Y, Z, cmap='viridis', edgecolor='none')
+    ax.set_title(title)
+    ax.set_xlabel('x1')
+    ax.set_ylabel('x2')
+    ax.set_zlabel('f(x)')
+    return fig
+
 def preprocess_image(image_buffer):
     img = Image.open(image_buffer).convert('L').resize((128, 128))
     img_array = np.array(img, dtype=np.float32) / 255.0
@@ -366,9 +382,10 @@ st.markdown("""
 if not os.path.exists(REPORTS_DIR):
     st.error("⚠️ `reports` directory not found! Please run `python run_optimizer.py` first.")
 else:
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "🔬 Live Segmentation",
         "📊 Performance Comparison",
+        "🧪 Algorithm Benchmarks",
         "📈 Optimization Analytics",
         "🔍 Detailed Analysis",
         "ℹ️ About"
@@ -390,7 +407,6 @@ else:
                 label_visibility="collapsed"
             )
             st.markdown("**Supported formats:** TIF, PNG, JPG, JPEG • **Max size:** 200MB")
-            st.markdown('</div>', unsafe_allow_html=True)
             
             if uploaded_file:
                 # Display original image
@@ -465,8 +481,6 @@ else:
                     stat_col2.metric("Affected Pixels", f"{tumor_pixels:,}")
                     stat_col3.metric("Total Pixels", "16,384")
                     stat_col4.metric("Resolution", "128×128")
-                    
-                   
 
     # --- Tab 2: Performance Comparison ---
     with tab2:
@@ -577,8 +591,64 @@ else:
             else:
                 st.info("Comparison visualization not found.")
 
-    # --- Tab 3: Optimization Analytics ---
+    # --- Tab 3: Algorithm Benchmarks (UPDATED WITH COMPARISON) ---
     with tab3:
+        st.header("QMSL-PSO vs. MSL-PSO: Benchmark Performance")
+        st.markdown("A validation of the optimizer's performance against a classical PSO on difficult mathematical problems. The goal is to minimize each function to a global minimum of `0.0`.")
+        
+        benchmark_path = 'reports/benchmark_comparison_results.json'
+        if not os.path.exists(benchmark_path):
+            st.warning("Benchmark comparison results not found. Run `python run_benchmarks.py` to generate them.")
+        else:
+            with open(benchmark_path, 'r') as f:
+                results = json.load(f)
+            
+            def create_benchmark_card(func_name, func_obj, bounds):
+                with st.expander(f"{func_name} Function", expanded=True):
+                    c1, c2 = st.columns([1, 2])
+                    with c1:
+                        st.pyplot(plot_benchmark_surface(func_obj, bounds, f"{func_name} Surface"))
+                    with c2:
+                        st.subheader("Performance Comparison (10 Runs)")
+                        
+                        # Metrics Table
+                        q_mean = results[func_name.lower()]['QMSL-PSO']['mean_fitness']
+                        q_std = results[func_name.lower()]['QMSL-PSO']['std_fitness']
+                        m_mean = results[func_name.lower()]['MSL-PSO']['mean_fitness']
+                        m_std = results[func_name.lower()]['MSL-PSO']['std_fitness']
+                        
+                        st.markdown(f"""
+                        | Algorithm | Mean Best Fitness (Lower is Better) | Standard Deviation |
+                        |---|---|---|
+                        | **QMSL-PSO (Novel)** | **{q_mean:.6f}** | {q_std:.6f} |
+                        | **MSL-PSO (Baseline)** | {m_mean:.6f} | {m_std:.6f} |
+                        """)
+                        
+                        # Convergence Plot
+                        st.subheader("Average Convergence Speed")
+                        fig, ax = plt.subplots()
+                        ax.plot(results[func_name.lower()]['QMSL-PSO']['convergence'], label='QMSL-PSO', linewidth=2)
+                        ax.plot(results[func_name.lower()]['MSL-PSO']['convergence'], label='MSL-PSO', linestyle='--', linewidth=2)
+                        ax.set_title(f"{func_name} Convergence")
+                        ax.set_ylabel("Fitness (Value to Minimize)")
+                        ax.set_xlabel("Generation")
+                        ax.legend()
+                        ax.grid(True, alpha=0.3)
+                        st.pyplot(fig)
+            
+            # Import the benchmark functions to create the plots
+            try:
+                from src.benchmark_functions import rastrigin, rosenbrock, ackley
+                
+                create_benchmark_card("Rastrigin", rastrigin, (-5.12, 5.12))
+                create_benchmark_card("Rosenbrock", rosenbrock, (-2.048, 2.048))
+                create_benchmark_card("Ackley", ackley, (-32.768, 32.768))
+                
+            except ImportError:
+                st.error("⚠️ Benchmark functions not found. Please ensure `src/benchmark_functions.py` exists.")
+
+    # --- Tab 4: Optimization Analytics ---
+    with tab4:
         st.markdown("## Optimization Process Analysis")
         
         if not os.path.exists(PARAMS_PATH):
@@ -657,8 +727,8 @@ else:
             else:
                 st.info("Swarm animation GIF not found.")
 
-    # --- Tab 4: Detailed Analysis ---
-    with tab4:
+    # --- Tab 5: Detailed Analysis ---
+    with tab5:
         st.markdown("## Detailed Performance Analysis")
         
         if os.path.exists(COMPARISON_RESULTS_PATH):
@@ -688,8 +758,8 @@ else:
         else:
             st.warning("Detailed results not available.")
 
-    # --- Tab 5: About ---
-    with tab5:
+    # --- Tab 6: About ---
+    with tab6:
         st.markdown("## About This Project")
         
         st.markdown("""
@@ -728,4 +798,29 @@ else:
         - Measures spatial overlap between prediction and ground truth
         - Range: 0-1, where 1 is perfect segmentation
         - Formula: 2|A ∩ B| / (|A| + |B|)
+        
+        **F1-Score**
+        - Harmonic mean of precision and recall
+        - Balances detection accuracy with false positive rate
+        
+        **IoU (Jaccard Index)**
+        - Ratio of intersection to union
+        - Strict metric penalizing any mismatch
+        
+        ### 🧪 Algorithm Validation
+        
+        The QMSL-PSO algorithm is validated on standard benchmark functions:
+        - **Rastrigin**: Tests handling of many local minima
+        - **Rosenbrock**: Tests navigation of narrow valleys
+        - **Ackley**: Tests balance between exploration and exploitation
+        
+        ### 📚 References
+        
+        - U-Net: Ronneberger et al. (2015) - "U-Net: Convolutional Networks for Biomedical Image Segmentation"
+        - PSO: Kennedy & Eberhart (1995) - "Particle Swarm Optimization"
+        - Multi-Swarm Learning: Various enhancements for improved convergence
+        
+        ### 👥 Contact & Support
+        
+        For questions, issues, or contributions, please refer to the project repository.
         """)
